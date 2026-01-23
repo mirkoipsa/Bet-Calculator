@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetCalc Pro - Calculadora de Apuestas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="disclaimer-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="icon-circle">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.2rem;">Advertencia Importante</h2>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Lea cuidadosamente antes de continuar</p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="warning-box">
+                    Las apuestas deportivas conllevan riesgos financieros significativos. Esta herramienta es únicamente informativa y educativa.
+                </div>
+                <ul>
+                    <li><strong>No nos hacemos responsables</strong> por pérdidas financieras.</li>
+                    <li>Las apuestas pueden ser <strong>adictivas</strong>. Juegue con responsabilidad.</li>
+                    <li>Debe tener <strong>18 años o más</strong> para participar.</li>
+                    <li>Las cuotas y ganancias son <strong>simulaciones matemáticas</strong>.</li>
+                </ul>
+                <div class="responsible-box">
+                    <strong>Juego Responsable:</strong> Si tiene problemas con el juego, busque ayuda profesional.
+                </div>
+                <button class="btn-accept" id="btn-accept">He leído y acepto los términos</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="featured-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                <div class="icon-circle">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.2rem;">Eventos Destacados</h2>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Top Partidos: Fútbol, NBA y NFL</p>
+                </div>
+                <button id="close-featured" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; margin-left:auto;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="loading-spinner" style="text-align:center; padding:20px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:var(--accent-purple);"></i>
+                    <p style="margin-top:10px;">Buscando mejores partidos...</p>
+                </div>
+
+                <div id="sports-container" style="display: none;">
+                    
+                    <h3 style="color:var(--accent-green); font-size:1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-futbol"></i> Futbol Big 5
+                    </h3>
+                    <div id="soccer-list" style="margin-bottom: 25px;"></div>
+
+                    <h3 style="color:var(--accent-orange); font-size:1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-basketball-ball"></i> NBA
+                    </h3>
+                    <div id="nba-list" style="margin-bottom: 25px;"></div>
+
+                    <h3 style="color:var(--accent-red); font-size:1rem; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-football-ball"></i> NFL
+                    </h3>
+                    <div id="nfl-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-calculator logo-icon"></i>
+                <div>
+                    <div>BetCalc Pro</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 400;">Calculadora Inteligente</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-purple"><i class="fas fa-star" style="margin-right:5px;"></i> Destacados</button>
+                <button class="btn-ghost"><i class="fas fa-info-circle"></i> Info</button>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <div class="left-col">
+                <div class="card">
+                    <div class="section-title">Monto a Apostar</div>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" id="stake-input" class="input-with-icon" placeholder="0.00" value="">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="quote-header">
+                        <div class="section-title" style="margin-bottom:0;">Cuotas</div>
+                        <button class="btn-add" id="btn-add-quote">
+                            <i class="fas fa-plus"></i> Agregar Cuota
+                        </button>
+                    </div>
+
+                    <div id="quotes-container">
+                        </div>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <div class="card summary-card">
+                    <div class="summary-header">
+                        <i class="fas fa-chart-line"></i> Resumen
+                    </div>
+
+                    <div class="result-box">
+                        <div class="result-label">Cuota Total (Combinada)</div>
+                        <div class="result-value" id="total-odds">0.00</div>
+                    </div>
+
+                    <div class="result-box">
+                        <div class="result-label">Monto Apostado</div>
+                        <div class="result-value" id="total-stake">$0.00</div>
+                    </div>
+
+                    <div class="result-box">
+                        <div class="result-label">Ganancia Total</div>
+                        <div class="result-value" id="total-return">$0.00</div>
+                    </div>
+
+                    <div class="result-box net-profit">
+                        <div class="result-label">Ganancia Neta</div>
+                        <div class="result-value" id="net-profit">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-warning">
+            <i class="fas fa-exclamation-triangle icon-warning"></i>
+            <span>Advertencia: Las apuestas deportivas conllevan riesgos. Esta herramienta es solo informativa. +18 años.</span>
+        </div>
+        
+        <div class="floating-chat">
+             <i class="fas fa-comment-dots"></i>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
