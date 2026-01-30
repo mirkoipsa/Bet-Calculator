@@ -33,10 +33,8 @@ btnAccept.addEventListener('click', () => {
     modal.style.transition = 'opacity 0.5s';
     setTimeout(() => {
         modal.style.display = 'none';
-        appContainer.style.display = 'block';
+        appContainer.style.display = 'flex';
         document.body.style.overflow = 'auto'; 
-        
-        // Iniciar con una fila vacía
         quotesContainer.innerHTML = '';
         addQuoteRow(); 
     }, 500);
@@ -45,7 +43,6 @@ btnAccept.addEventListener('click', () => {
 // ==========================================
 // 3. LÓGICA DE LA CALCULADORA
 // ==========================================
-
 const formatMoney = (amount) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
@@ -83,8 +80,6 @@ const addQuoteRow = () => {
 
     const row = document.createElement('div');
     row.className = 'quote-row';
-    
-    // Solo poner botón de borrar si NO es la primera fila
     let deleteBtnHTML = isFirstRow ? '' : `<button class="btn-delete" title="Eliminar"><i class="fas fa-times"></i></button>`;
 
     row.innerHTML = `
@@ -94,7 +89,7 @@ const addQuoteRow = () => {
         </div>
         <div>
             <div style="font-size:0.7rem; color:#9ca3af; margin-bottom:4px;">Descripción (opcional)</div>
-            <input type="text" class="quote-desc" placeholder="Ej: Real Madrid vs Barcelona">
+            <input type="text" class="quote-desc" placeholder="Ej: Real Madrid gana">
         </div>
         ${deleteBtnHTML}
     `;
@@ -126,52 +121,70 @@ btnAddQuote.addEventListener('click', addQuoteRow);
 stakeInput.addEventListener('input', calculate);
 
 // ==========================================
-// 4. LÓGICA DE LA API (DESTACADOS)
+// 4. LÓGICA DE API AVANZADA CON "CACHÉ" (AHORRO DE DATOS)
 // ==========================================
+
+// ¡¡IMPORTANTE!!: Pega aquí tu API KEY
+const apiKey = '5a78a92592f702a38bd32fe2c7ff8d2e'; 
+
+// VARIABLES PARA EL CACHÉ (MEMORIA TEMPORAL)
+let cachedData = null;       // Aquí guardaremos los datos descargados
+let lastFetchTime = 0;       // Aquí guardaremos la hora de la última descarga
+const CACHE_DURATION = 3600000; // 3600000 ms = 1 hora. (Cambia esto si quieres más o menos tiempo)
 
 btnFeatured.addEventListener('click', () => {
     featuredModal.style.display = 'flex';
-    fetchAllSports();
+    
+    // VERIFICACIÓN DE CACHÉ
+    const now = Date.now();
+    
+    // Si tenemos datos guardados Y ha pasado menos de 1 hora...
+    if (cachedData && (now - lastFetchTime < CACHE_DURATION)) {
+        console.log("Usando datos guardados (No se gasta API)");
+        renderAllSports(cachedData.soccer, cachedData.nba, cachedData.nfl);
+    } else {
+        console.log("Datos viejos o inexistentes. Descargando nuevos... (Se gasta API)");
+        fetchRealOdds();
+    }
 });
 
 closeFeaturedBtn.addEventListener('click', () => {
     featuredModal.style.display = 'none';
 });
-
 featuredModal.addEventListener('click', (e) => {
     if (e.target === featuredModal) featuredModal.style.display = 'none';
 });
 
-async function fetchAllSports() {
-    const leagues = [
-        { id: '4328', name: 'EPL' },        
-        { id: '4335', name: 'La Liga' },    
-        { id: '4332', name: 'Serie A' },    
-        { id: '4331', name: 'Bundesliga' }, 
-        { id: '4334', name: 'Ligue 1' }     
-    ];
+async function fetchRealOdds() {
+    if(apiKey === 'API_KEY') {
+        alert("¡Falta la API KEY en script.js!");
+        return;
+    }
 
-    const nbaUrl = 'https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387';
-    const nflUrl = 'https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4391';
+    const baseUrl = 'https://api.the-odds-api.com/v4/sports';
+    const soccerLeagues = [
+        'soccer_epl', 'soccer_spain_la_liga', 'soccer_italy_serie_a',
+        'soccer_germany_bundesliga', 'soccer_france_ligue_one'
+    ];
 
     try {
         loadingSpinner.style.display = 'block';
         sportsContainer.style.display = 'none';
-        soccerList.innerHTML = '';
-        nbaList.innerHTML = '';
-        nflList.innerHTML = '';
+        
+        // Limpiamos listas visuales
+        soccerList.innerHTML = ''; nbaList.innerHTML = ''; nflList.innerHTML = '';
 
-        // Fetch futbol
-        const soccerPromises = leagues.map(league => 
-            fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${league.id}`)
+        // 1. Pedir Fútbol
+        const soccerPromises = soccerLeagues.map(leagueKey => 
+            fetch(`${baseUrl}/${leagueKey}/odds/?apiKey=${apiKey}&regions=eu&markets=h2h&oddsFormat=decimal`)
                 .then(res => res.json())
-                .catch(() => ({ events: [] })) 
+                .catch(err => [])
         );
 
-        // Fetch nba y nfl
+        // 2. Pedir NBA y NFL
         const otherSportsPromises = [
-            fetch(nbaUrl).then(res => res.json()),
-            fetch(nflUrl).then(res => res.json())
+            fetch(`${baseUrl}/basketball_nba/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=decimal`).then(r => r.json()),
+            fetch(`${baseUrl}/americanfootball_nfl/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=decimal`).then(r => r.json())
         ];
 
         const [soccerResults, [nbaData, nflData]] = await Promise.all([
@@ -179,87 +192,141 @@ async function fetchAllSports() {
             Promise.all(otherSportsPromises)
         ]);
 
-        // Procesar futbol
-        let allSoccerEvents = [];
-        soccerResults.forEach(leagueData => {
-            if (leagueData.events) {
-                allSoccerEvents = allSoccerEvents.concat(leagueData.events);
+        // Procesar Fútbol
+        let topSoccerMatches = [];
+        soccerResults.forEach(leagueEvents => {
+            if (Array.isArray(leagueEvents) && leagueEvents.length > 0) {
+                leagueEvents.sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time));
+                topSoccerMatches = topSoccerMatches.concat(leagueEvents.slice(0, 2));
             }
         });
+        topSoccerMatches.sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time));
 
-        // Ordenar por fecha
-        allSoccerEvents.sort((a, b) => {
-            const dateA = new Date(`${a.dateEvent}T${a.strTime}`);
-            const dateB = new Date(`${b.dateEvent}T${b.strTime}`);
-            return dateA - dateB;
-        });
+        // GUARDAR EN CACHÉ (MEMORIA)
+        cachedData = {
+            soccer: topSoccerMatches,
+            nba: nbaData,
+            nfl: nflData
+        };
+        lastFetchTime = Date.now(); // Marcamos la hora actual
 
-        loadingSpinner.style.display = 'none';
-        sportsContainer.style.display = 'block';
-
-        renderGenericList(allSoccerEvents, soccerList, 6); 
-        renderGenericList(nbaData.events, nbaList, 6);
-        renderGenericList(nflData.events, nflList, 6);
+        // RENDERIZAR
+        renderAllSports(topSoccerMatches, nbaData, nflData);
 
     } catch (error) {
         console.error('Error API:', error);
         loadingSpinner.style.display = 'none';
         sportsContainer.style.display = 'block';
-        sportsContainer.innerHTML = '<p style="text-align:center; color:#ef4444;">Error conectando con el servidor de deportes.</p>';
+        sportsContainer.innerHTML = '<p style="text-align:center; color:#ef4444;">Error cargando cuotas. Verifica tu API Key.</p>';
     }
 }
 
-function renderGenericList(events, container, limit) {
-    if (!events || events.length === 0) {
-        container.innerHTML = '<p style="font-size:0.8rem; color:#6b7280; font-style:italic;">No hay eventos próximos.</p>';
+// Nueva función separada para dibujar (para poder llamarla desde el caché o desde la API)
+function renderAllSports(soccer, nba, nfl) {
+    loadingSpinner.style.display = 'none';
+    sportsContainer.style.display = 'block';
+    
+    // Limpiamos antes de dibujar por si acaso
+    soccerList.innerHTML = ''; 
+    nbaList.innerHTML = ''; 
+    nflList.innerHTML = '';
+
+    renderOddsList(soccer, soccerList, 10, true);
+    renderOddsList(nba, nbaList, 6, false);
+    renderOddsList(nfl, nflList, 6, false);
+}
+
+function renderOddsList(events, container, limit, canDraw) {
+    if (!events || !Array.isArray(events) || events.length === 0) {
+        container.innerHTML = '<p style="font-size:0.8rem; color:#6b7280; font-style:italic;">No hay cuotas disponibles.</p>';
         return;
     }
 
     const limitedEvents = events.slice(0, limit);
 
     limitedEvents.forEach(event => {
+        const bookmakers = event.bookmakers;
+        if(!bookmakers || bookmakers.length === 0) return;
+
+        const outcomes = bookmakers[0].markets[0].outcomes;
+        const homeOdd = outcomes.find(o => o.name === event.home_team)?.price || 0;
+        const awayOdd = outcomes.find(o => o.name === event.away_team)?.price || 0;
+        const drawOdd = canDraw ? (outcomes.find(o => o.name === 'Draw')?.price || 0) : null;
+
+        const dateObj = new Date(event.commence_time);
+        const dateStr = dateObj.toLocaleDateString();
+        const timeStr = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
         const matchCard = document.createElement('div');
         matchCard.className = 'match-card';
-        
-        const date = new Date(event.dateEvent).toLocaleDateString();
-        const time = event.strTime ? event.strTime.substring(0,5) : '';
+        matchCard.style.cursor = 'default'; 
+        matchCard.style.flexDirection = 'column'; 
+        matchCard.style.alignItems = 'stretch';
+
+        let drawButtonHTML = '';
+        if (canDraw && drawOdd) {
+            drawButtonHTML = `<button class="btn-odd-select" onclick="selectOdd('${event.home_team} vs ${event.away_team} (Empate)', ${drawOdd})">Empate ${drawOdd}</button>`;
+        }
 
         matchCard.innerHTML = `
-            <div class="teams-info">
-                <i class="fas fa-calendar-alt" style="color:#6b7280; font-size:0.8rem;"></i>
-                <div>
-                    <div style="font-weight:600; font-size:0.85rem;">${event.strEventAlternate || event.strEvent}</div>
-                    <div style="font-size:0.7rem; color:#9ca3af;">${date} ${time ? '- ' + time : ''}</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div style="font-weight:600; font-size:0.9rem;">
+                    <span style="color:var(--accent-purple); font-size:0.7rem; display:block; margin-bottom:2px;">${event.sport_title.replace('Soccer ', '')}</span>
+                    ${event.home_team} vs ${event.away_team}
+                </div>
+                <div style="font-size:0.7rem; color:#9ca3af; text-align:right;">
+                    <div>${dateStr}</div>
+                    <div>${timeStr}</div>
                 </div>
             </div>
-            <button class="btn-select-match">Usar</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-odd-select" onclick="selectOdd('${event.home_team} gana', ${homeOdd})">
+                    ${event.home_team} <span style="color:var(--accent-green); font-weight:bold;">${homeOdd}</span>
+                </button>
+                ${drawButtonHTML}
+                <button class="btn-odd-select" onclick="selectOdd('${event.away_team} gana', ${awayOdd})">
+                    ${event.away_team} <span style="color:var(--accent-green); font-weight:bold;">${awayOdd}</span>
+                </button>
+            </div>
         `;
-
-        matchCard.addEventListener('click', () => {
-            selectMatch(event.strHomeTeam, event.strAwayTeam);
-        });
 
         container.appendChild(matchCard);
     });
 }
 
-function selectMatch(home, away) {
+window.selectOdd = function(desc, odd) {
     featuredModal.style.display = 'none';
-    
-    // Agregamos nueva fila SIEMPRE que se selecciona un partido
-    addQuoteRow(); 
+    addQuoteRow();
     
     const rows = document.querySelectorAll('.quote-row');
     const lastRow = rows[rows.length - 1];
     
-    let descText = "Evento Seleccionado";
-    if (home && away) {
-        descText = `${home} vs ${away}`;
-    }
-
-    lastRow.querySelector('.quote-desc').value = descText;
-    
-    setTimeout(() => {
-        lastRow.querySelector('.quote-value').focus();
-    }, 100);
+    lastRow.querySelector('.quote-desc').value = desc;
+    lastRow.querySelector('.quote-value').value = odd; 
+    lastRow.querySelector('.quote-value').dispatchEvent(new Event('input'));
 }
+
+// ==========================================
+// 5. LÓGICA DEL MODAL DE INFO / SOBRE NOSOTROS
+// ==========================================
+
+const btnInfo = document.getElementById('btn-info');
+const infoModal = document.getElementById('info-modal');
+const closeInfoBtn = document.getElementById('close-info');
+
+// Abrir Modal
+btnInfo.addEventListener('click', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Cerrar con el botón X
+closeInfoBtn.addEventListener('click', () => {
+    infoModal.style.display = 'none';
+});
+
+// Cerrar si se da click fuera del contenido (en el fondo oscuro)
+infoModal.addEventListener('click', (e) => {
+    if (e.target === infoModal) {
+        infoModal.style.display = 'none';
+    }
+});

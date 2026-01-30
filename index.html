@@ -81,6 +81,71 @@
         </div>
     </div>
 
+    <div id="info-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                <div class="icon-circle">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.2rem;">Sobre Nosotros</h2>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">BetCalc Pro - Tu aliado inteligente</p>
+                </div>
+                <button id="close-info" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; margin-left:auto;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color:var(--text-primary); font-size:1rem; margin-bottom:10px;">¿Quiénes Somos?</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">
+                        BetCalc Pro nace de la pasión por la tecnología y el análisis de datos. Somos un proyecto dedicado a proporcionar herramientas accesibles que ayuden a los usuarios a entender sus inversiones y gestionar riesgos de manera matemática y responsable.
+                    </p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <i class="fas fa-bullseye info-icon" style="color: var(--accent-purple);"></i>
+                        <h4>Nuestra Misión</h4>
+                        <p>Democratizar el acceso a herramientas de cálculo profesional.</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <i class="fas fa-shield-alt info-icon" style="color: var(--accent-green);"></i>
+                        <h4>Juego Responsable</h4>
+                        <p>Promovemos activamente el control y la toma de decisiones informada.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <i class="fas fa-brain info-icon" style="color: var(--accent-orange);"></i>
+                        <h4>Transparencia</h4>
+                        <p>Cálculos claros, verificables y sin "cajas negras".</p>
+                    </div>
+
+                    <div class="info-card">
+                        <i class="fas fa-users info-icon" style="color: #3b82f6;"></i>
+                        <h4>Comunidad</h4>
+                        <p>Miles de usuarios confían en nuestros algoritmos diariamente.</p>
+                    </div>
+                </div>
+
+                <div class="values-box">
+                    <h3 style="color:var(--text-primary); font-size:1rem; margin-bottom:15px;">Nuestros Valores</h3>
+                    <ul class="values-list">
+                        <li><i class="fas fa-check"></i> <span><strong>Innovación:</strong> Uso de APIs en tiempo real para datos precisos.</span></li>
+                        <li><i class="fas fa-check"></i> <span><strong>Educación:</strong> Empoderar al usuario con conocimiento.</span></li>
+                        <li><i class="fas fa-check"></i> <span><strong>Seguridad:</strong> Privacidad y manejo ético de la información.</span></li>
+                    </ul>
+                </div>
+
+                <div style="background-color:rgba(59, 130, 246, 0.1); border:1px solid #1e3a8a; color:#93c5fd; padding:15px; border-radius:8px; font-size:0.85rem; text-align:center; margin-top:20px;">
+                    <strong>Recordatorio:</strong> Esta es una herramienta educativa. Siempre apueste de manera responsable.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="app-container">
         <header>
             <div class="logo">
@@ -92,7 +157,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn-purple"><i class="fas fa-star" style="margin-right:5px;"></i> Destacados</button>
-                <button class="btn-ghost"><i class="fas fa-info-circle"></i> Info</button>
+                <button class="btn-ghost" id="btn-info"><i class="fas fa-info-circle"></i> Info</button>
             </div>
         </header>
 
@@ -148,10 +213,25 @@
             </div>
         </div>
 
+        <footer class="main-footer">
         <div class="footer-warning">
-            <i class="fas fa-exclamation-triangle icon-warning"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <span>Advertencia: Las apuestas deportivas conllevan riesgos. Esta herramienta es solo informativa. +18 años.</span>
         </div>
+        
+        <div class="footer-legal">
+            <div>
+                &copy; 2026 BetCalc Pro. Todos los derechos reservados.
+            </div>
+            <div class="legal-links">
+                <span>Herramienta Educativa</span>
+                <span>•</span>
+                <span>No es asesoramiento financiero</span>
+                <span>•</span>
+                <span>Juego Responsable</span>
+            </div>
+        </div>
+        </footer>
         
         <div class="floating-chat">
              <i class="fas fa-comment-dots"></i>
