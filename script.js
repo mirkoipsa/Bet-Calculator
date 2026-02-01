@@ -344,7 +344,7 @@ const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 
 // LEER LA CLAVE DESDE CONFIG.JS
-const geminiKey = CONFIG.GEMINI_API_KEY;
+const geminiKey = atob(CONFIG.GEMINI_API_KEY);
 
 // Abrir/Cerrar Chat
 chatBtn.addEventListener('click', () => {
