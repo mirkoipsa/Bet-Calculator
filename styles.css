@@ -550,3 +550,100 @@ input:focus {
     color: var(--accent-green); /* El check verde */
     margin-top: 4px;
 }
+
+/* --- ESTILOS DEL CHATBOT --- */
+.chat-window-container {
+    position: fixed;
+    bottom: 100px; /* Encima del botón flotante */
+    right: 30px;
+    width: 350px;
+    height: 450px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    overflow: hidden;
+    /* Animación de entrada */
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-header {
+    background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
+    padding: 15px;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--bg-dark);
+}
+
+.message {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+.bot-message {
+    background-color: #374151;
+    color: var(--text-primary);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+.user-message {
+    background-color: var(--accent-purple);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-input-area {
+    padding: 10px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    background-color: var(--bg-card);
+}
+
+.chat-input-area input {
+    flex: 1;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    outline: none;
+}
+
+.chat-input-area button {
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

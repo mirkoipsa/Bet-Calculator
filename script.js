@@ -330,3 +330,121 @@ infoModal.addEventListener('click', (e) => {
         infoModal.style.display = 'none';
     }
 });
+
+// ==========================================
+// LÓGICA DEL CHATBOT CON GEMINI AI
+// ==========================================
+
+// Elementos del DOM
+const chatBtn = document.querySelector('.floating-chat');
+const chatWindow = document.getElementById('chat-window');
+const closeChatBtn = document.getElementById('close-chat');
+const chatMessages = document.getElementById('chat-messages');
+const userInput = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+
+// LEER LA CLAVE DESDE CONFIG.JS
+const geminiKey = CONFIG.GEMINI_API_KEY;
+
+// Abrir/Cerrar Chat
+chatBtn.addEventListener('click', () => {
+    if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+        chatWindow.style.display = 'flex';
+        userInput.focus();
+    } else {
+        chatWindow.style.display = 'none';
+    }
+});
+
+closeChatBtn.addEventListener('click', () => {
+    chatWindow.style.display = 'none';
+});
+
+// Enviar Mensaje (Click o Enter)
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    // Validación de seguridad básica
+    if (!geminiKey || geminiKey.includes('PEGAR_AQUI')) {
+        addMessage("Error: Falta configurar la GEMINI_API_KEY en el archivo config.js", 'bot');
+        return;
+    }
+
+    // 1. Mostrar mensaje del usuario
+    addMessage(text, 'user');
+    userInput.value = '';
+    
+    // 2. Mostrar "Escribiendo..."
+    const loadingId = addMessage('Analizando...', 'bot', true);
+
+    try {
+        // 3. Instrucción para darle personalidad
+        const systemInstruction = `
+            Actúa como un experto asistente de apuestas deportivas para la app "BetCalc Pro".
+            Tus respuestas deben ser breves, útiles y educativas.
+            Explica conceptos como handicap, parlay, bankroll, ROI, stake de ser solicitado.
+            Si te piden una predicción segura, aclara siempre que en las apuestas nada es 100% seguro.
+            No des consejos financieros irresponsables.
+            Si preguntan datos o analisis de algun partido brevemente explica la informacion relevante (estadísticas, forma reciente, enfrentamientos directos) pero no des un veredicto definitivo.
+        `;
+
+        const fullPrompt = `${systemInstruction}\n\nPregunta del usuario: ${text}`;
+
+        // 4. Conectar con Gemini 2.5 Flash (Rápido y Gratis)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: fullPrompt }]
+                }]
+            })
+        });
+
+        const data = await response.json();
+        
+        // Verificar errores (Ej: Dominio no permitido)
+        if (data.error) {
+            console.error(data.error);
+            throw new Error(data.error.message);
+        }
+
+        // 5. Obtener respuesta
+        const aiResponse = data.candidates[0].content.parts[0].text;
+
+        // 6. Mostrar respuesta
+        document.getElementById(loadingId).remove();
+        addMessage(aiResponse, 'bot');
+
+    } catch (error) {
+        console.error('Error Chat:', error);
+        document.getElementById(loadingId).remove();
+        addMessage('Lo siento, hubo un error de conexión o de configuración de la API Key. Intenta más tarde.', 'bot');
+    }
+}
+
+// Función para crear las burbujas de chat
+function addMessage(text, sender, isLoading = false) {
+    const div = document.createElement('div');
+    div.className = `message ${sender}-message`;
+    div.innerText = text;
+    
+    if (isLoading) {
+        div.id = 'loading-msg';
+        div.style.fontStyle = 'italic';
+        div.style.opacity = '0.7';
+    }
+
+    chatMessages.appendChild(div);
+    // Auto-scroll hacia abajo
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div.id;
+}

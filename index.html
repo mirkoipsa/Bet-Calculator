@@ -238,6 +238,30 @@
         </div>
     </div>
 
+    <div id="chat-window" class="chat-window-container" style="display: none;">
+        <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-robot"></i>
+                <span>BetCalc AI</span>
+            </div>
+            <button id="close-chat" style="background:none; border:none; color:white; cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div id="chat-messages" class="chat-body">
+            <div class="message bot-message">
+                Hola, soy tu asistente de BetCalc Pro. ¿En qué puedo ayudarte con tus apuestas hoy?
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Pregunta algo..." autocomplete="off">
+            <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

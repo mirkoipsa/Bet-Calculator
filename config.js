@@ -1,0 +1,4 @@
+const CONFIG = {
+    GEMINI_API_KEY: 'AIzaSyD-boPFhWOSnWr72Y94Qt8E7qeg7CVrh_A',
+    ODDS_API_KEY: '5a78a92592f702a38bd32fe2c7ff8d2e'
+};
