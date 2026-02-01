@@ -1,6 +1,5 @@
 # 📊 BetCalc Pro - Calculadora de Apuestas Inteligente
 
-![Estado del Proyecto](https://img.shields.io/badge/Estado-Terminado-green)
 ![Tecnología](https://img.shields.io/badge/Stack-HTML%20%7C%20CSS%20%7C%20JS-blue)
 ![API](https://img.shields.io/badge/APIs-TheOddsAPI%20%7C%20Gemini-orange)
 
