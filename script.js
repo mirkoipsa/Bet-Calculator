@@ -34,9 +34,9 @@ btnAccept.addEventListener('click', () => {
     setTimeout(() => {
         modal.style.display = 'none';
         appContainer.style.display = 'flex';
-        document.body.style.overflow = 'auto'; 
+        document.body.style.overflow = 'auto';
         quotesContainer.innerHTML = '';
-        addQuoteRow(); 
+        addQuoteRow();
     }, 500);
 });
 
@@ -76,7 +76,7 @@ const calculate = () => {
 
 const addQuoteRow = () => {
     const index = quotesContainer.children.length + 1;
-    const isFirstRow = index === 1; 
+    const isFirstRow = index === 1;
 
     const row = document.createElement('div');
     row.className = 'quote-row';
@@ -100,9 +100,9 @@ const addQuoteRow = () => {
     if (!isFirstRow) {
         const btnDel = row.querySelector('.btn-delete');
         btnDel.addEventListener('click', () => {
-            row.remove();      
-            renumberRows();    
-            calculate();       
+            row.remove();
+            renumberRows();
+            calculate();
         });
     }
 
@@ -125,7 +125,7 @@ stakeInput.addEventListener('input', calculate);
 // ==========================================
 
 // ¡¡IMPORTANTE!!: Pega aquí tu API KEY
-const apiKey = '5a78a92592f702a38bd32fe2c7ff8d2e'; 
+const apiKey = '5a78a92592f702a38bd32fe2c7ff8d2e';
 
 // VARIABLES PARA EL CACHÉ (MEMORIA TEMPORAL)
 let cachedData = null;       // Aquí guardaremos los datos descargados
@@ -134,10 +134,10 @@ const CACHE_DURATION = 3600000; // 3600000 ms = 1 hora. (Cambia esto si quieres 
 
 btnFeatured.addEventListener('click', () => {
     featuredModal.style.display = 'flex';
-    
+
     // VERIFICACIÓN DE CACHÉ
     const now = Date.now();
-    
+
     // Si tenemos datos guardados Y ha pasado menos de 1 hora...
     if (cachedData && (now - lastFetchTime < CACHE_DURATION)) {
         console.log("Usando datos guardados (No se gasta API)");
@@ -156,7 +156,7 @@ featuredModal.addEventListener('click', (e) => {
 });
 
 async function fetchRealOdds() {
-    if(apiKey === 'API_KEY') {
+    if (apiKey === 'API_KEY') {
         alert("¡Falta la API KEY en script.js!");
         return;
     }
@@ -170,12 +170,12 @@ async function fetchRealOdds() {
     try {
         loadingSpinner.style.display = 'block';
         sportsContainer.style.display = 'none';
-        
+
         // Limpiamos listas visuales
         soccerList.innerHTML = ''; nbaList.innerHTML = ''; nflList.innerHTML = '';
 
         // 1. Pedir Fútbol
-        const soccerPromises = soccerLeagues.map(leagueKey => 
+        const soccerPromises = soccerLeagues.map(leagueKey =>
             fetch(`${baseUrl}/${leagueKey}/odds/?apiKey=${apiKey}&regions=eu&markets=h2h&oddsFormat=decimal`)
                 .then(res => res.json())
                 .catch(err => [])
@@ -225,10 +225,10 @@ async function fetchRealOdds() {
 function renderAllSports(soccer, nba, nfl) {
     loadingSpinner.style.display = 'none';
     sportsContainer.style.display = 'block';
-    
+
     // Limpiamos antes de dibujar por si acaso
-    soccerList.innerHTML = ''; 
-    nbaList.innerHTML = ''; 
+    soccerList.innerHTML = '';
+    nbaList.innerHTML = '';
     nflList.innerHTML = '';
 
     renderOddsList(soccer, soccerList, 10, true);
@@ -246,7 +246,7 @@ function renderOddsList(events, container, limit, canDraw) {
 
     limitedEvents.forEach(event => {
         const bookmakers = event.bookmakers;
-        if(!bookmakers || bookmakers.length === 0) return;
+        if (!bookmakers || bookmakers.length === 0) return;
 
         const outcomes = bookmakers[0].markets[0].outcomes;
         const homeOdd = outcomes.find(o => o.name === event.home_team)?.price || 0;
@@ -255,12 +255,12 @@ function renderOddsList(events, container, limit, canDraw) {
 
         const dateObj = new Date(event.commence_time);
         const dateStr = dateObj.toLocaleDateString();
-        const timeStr = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const matchCard = document.createElement('div');
         matchCard.className = 'match-card';
-        matchCard.style.cursor = 'default'; 
-        matchCard.style.flexDirection = 'column'; 
+        matchCard.style.cursor = 'default';
+        matchCard.style.flexDirection = 'column';
         matchCard.style.alignItems = 'stretch';
 
         let drawButtonHTML = '';
@@ -294,15 +294,15 @@ function renderOddsList(events, container, limit, canDraw) {
     });
 }
 
-window.selectOdd = function(desc, odd) {
+window.selectOdd = function (desc, odd) {
     featuredModal.style.display = 'none';
     addQuoteRow();
-    
+
     const rows = document.querySelectorAll('.quote-row');
     const lastRow = rows[rows.length - 1];
-    
+
     lastRow.querySelector('.quote-desc').value = desc;
-    lastRow.querySelector('.quote-value').value = odd; 
+    lastRow.querySelector('.quote-value').value = odd;
     lastRow.querySelector('.quote-value').dispatchEvent(new Event('input'));
 }
 
@@ -343,8 +343,7 @@ const chatMessages = document.getElementById('chat-messages');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 
-// LEER LA CLAVE DESDE CONFIG.JS
-const geminiKey = atob(CONFIG.GEMINI_API_KEY);
+// Configuración de API ya no necesita la KEY aquí en el frontend
 
 // Abrir/Cerrar Chat
 chatBtn.addEventListener('click', () => {
@@ -370,64 +369,45 @@ async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
-    // Validación de seguridad básica
-    if (!geminiKey || geminiKey.includes('PEGAR_AQUI')) {
-        addMessage("Error: Falta configurar la GEMINI_API_KEY en el archivo config.js", 'bot');
+    // Validación básica
+    if (text.length > 500) {
+        addMessage("El mensaje es demasiado largo.", 'bot');
         return;
     }
 
     // 1. Mostrar mensaje del usuario
     addMessage(text, 'user');
     userInput.value = '';
-    
+
     // 2. Mostrar "Escribiendo..."
     const loadingId = addMessage('Analizando...', 'bot', true);
 
     try {
-        // 3. Instrucción para darle personalidad
-        const systemInstruction = `
-            Actúa como un experto asistente de apuestas deportivas para la app "BetCalc Pro".
-            Tus respuestas deben ser breves, útiles y educativas.
-            Explica conceptos como handicap, parlay, bankroll, ROI, stake de ser solicitado.
-            Si te piden una predicción segura, aclara siempre que en las apuestas nada es 100% seguro.
-            No des consejos financieros irresponsables.
-            Si preguntan datos o analisis de algun partido brevemente explica la informacion relevante (estadísticas, forma reciente, enfrentamientos directos) pero no des un veredicto definitivo.
-        `;
-
-        const fullPrompt = `${systemInstruction}\n\nPregunta del usuario: ${text}`;
-
-        // 4. Conectar con Gemini 2.5 Flash (Rápido y Gratis)
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+        // 3. Conectar con la función Vercel (/api/chat) en lugar de Gemini directamente
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: fullPrompt }]
-                }]
-            })
+            body: JSON.stringify({ message: text })
         });
 
         const data = await response.json();
-        
-        // Verificar errores (Ej: Dominio no permitido)
-        if (data.error) {
+
+        // Verificar errores
+        if (!response.ok) {
             console.error(data.error);
-            throw new Error(data.error.message);
+            throw new Error(data.error || 'Error del servidor');
         }
 
-        // 5. Obtener respuesta
-        const aiResponse = data.candidates[0].content.parts[0].text;
-
-        // 6. Mostrar respuesta
+        // 4. Mostrar respuesta
         document.getElementById(loadingId).remove();
-        addMessage(aiResponse, 'bot');
+        addMessage(data.response, 'bot');
 
     } catch (error) {
         console.error('Error Chat:', error);
         document.getElementById(loadingId).remove();
-        addMessage('Lo siento, hubo un error de conexión o de configuración de la API Key. Intenta más tarde.', 'bot');
+        addMessage('Lo siento, hubo un error de conexión al servidor. Intenta más tarde.', 'bot');
     }
 }
 
@@ -436,7 +416,7 @@ function addMessage(text, sender, isLoading = false) {
     const div = document.createElement('div');
     div.className = `message ${sender}-message`;
     div.innerText = text;
-    
+
     if (isLoading) {
         div.id = 'loading-msg';
         div.style.fontStyle = 'italic';
